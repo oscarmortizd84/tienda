@@ -1,0 +1,72 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model Category {
+  id    Int    @id @default(autoincrement())
+  name  String
+  products Product[]
+}
+
+model Customer {
+  id      Int     @id @default(autoincrement())
+  name    String
+  email   String  @unique
+  orders  Order[]
+}
+
+model Order {
+  id         Int           @id @default(autoincrement())
+  customerId Int
+  customer   Customer      @relation(fields: [customerId], references: [id])
+  date       DateTime      @default(now())
+  orderItems OrderProduct[]
+}
+
+model OrderProduct {
+  order   Order   @relation(fields: [orderId], references: [id])
+  orderId Int
+  product Product @relation(fields: [productId], references: [id])
+  productId Int
+  quantity Int
+  @@id([orderId, productId])
+}
+
+
+model Supplier {
+  id         Int               @id @default(autoincrement())
+  name       String
+  products   ProductSupplier[]
+}
+
+model ProductSupplier {
+  supplier   Supplier @relation(fields: [supplierId], references: [id])
+  supplierId Int
+  product    Product  @relation(fields: [productId], references: [id])
+  productId  Int
+  @@id([supplierId, productId])
+}
+
+
+model Product {
+  id          Int              @id @default(autoincrement())
+  name        String
+  description String
+  price       Float
+  categoryId  Int
+  category    Category         @relation(fields: [categoryId], references: [id])
+  orderItems  OrderProduct[]
+  suppliers   ProductSupplier[]
+}
